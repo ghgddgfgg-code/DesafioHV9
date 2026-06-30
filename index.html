@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1.0"/>
+<meta name="theme-color" content="#06061f"/>
+<meta name="description" content="DesafioHV — Dominá tus 24 horas. Tracker de rutinas con misiones, logros y progreso en la nube."/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta name="apple-mobile-web-app-title" content="DesafioHV"/>
+<title>DesafioHV</title>
+<link rel="manifest" href="manifest.json"/>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<!-- LOADING SCREEN -->
+<div id="loading-screen">
+  <div class="loading-content">
+    <div class="loading-logo">Desafio<span>HV</span></div>
+    <div class="loading-star">⭐</div>
+    <div class="loading-bar-track"><div class="loading-bar-fill"></div></div>
+    <div class="loading-text">Cargando tu rutina...</div>
+  </div>
+</div>
+
+<div id="bg-mesh"></div>
+<div class="bg-blob bg-blob-1"></div>
+<div class="bg-blob bg-blob-2"></div>
+<div class="bg-blob bg-blob-3"></div>
+<canvas id="particles"></canvas>
+
+<!-- ══ AUTH SCREEN ══ -->
+<div id="auth-screen" style="display:none">
+  <div class="auth-box">
+    <div class="auth-logo">Desafio<span>HV</span> ⭐</div>
+    <div class="auth-tagline">Dominá tus 24 horas</div>
+    <div class="auth-title">Guardá tu progreso</div>
+    <div class="auth-sub">Iniciá sesión para que tu rutina y tus logros viajen con vos a cualquier dispositivo.</div>
+    <div class="auth-features">
+      <div class="auth-feat"><span class="auth-feat-icon">☁️</span>Progreso sincronizado en la nube</div>
+      <div class="auth-feat"><span class="auth-feat-icon">📱</span>Funciona en cualquier dispositivo</div>
+      <div class="auth-feat"><span class="auth-feat-icon">🔒</span>Solo vos ves tus datos</div>
+    </div>
+    <button class="btn-google" id="btn-google-login">
+      <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+        <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+        <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
+        <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+      </svg>
+      Continuar con Google
+    </button>
+    <div class="auth-skip" id="auth-skip-btn">Continuar sin cuenta (solo este dispositivo)</div>
+  </div>
+</div>
+
+<!-- TUTORIAL -->
+<div id="tutorial" style="display:none">
+  <div class="tut-box">
+    <div class="tut-dots" id="tut-dots"></div>
+  </div>
+</div>
+
+<!-- REST DAY MODAL -->
+<div class="modal-overlay" id="rest-day-modal" style="display:none">
+  <div class="modal-box" style="max-width:380px">
+    <div class="modal-header">
+      <div class="modal-title">🏖️ Día libre semanal</div>
+      <button class="modal-close" onclick="closeRestDayModal()">✕</button>
+    </div>
+    <div id="rest-day-body"></div>
+  </div>
+</div>
+
+<!-- MODE MODAL -->
+<div class="modal-overlay" id="mode-modal" style="display:none">
+  <div class="modal-box" style="max-width:480px">
+    <div class="modal-header">
+      <div class="modal-title">🎮 Modo de juego</div>
+      <button class="modal-close" onclick="closeModeSelector()">✕</button>
+    </div>
+    <div id="mode-modal-body"></div>
+  </div>
+</div>
+
+<div id="drawer-overlay" onclick="closeDrawer()"></div>
+
+<!-- DRAWER -->
+<div id="drawer">
+  <button class="drawer-close-btn" onclick="closeDrawer()">✕</button>
+  <!-- User info (se inyecta por JS) -->
+  <div id="drawer-user-slot"></div>
+  <div class="drawer-header">
+    <div class="drawer-logo">Desafio<span>HV</span></div>
+    <div class="drawer-tagline">Dominá tus 24 horas ⭐</div>
+  </div>
+  <nav class="drawer-nav">
+    <button class="drawer-nav-item active" id="dnav-hoy" onclick="switchTab('hoy');closeDrawer()"><span class="drawer-nav-icon">🏠</span> Hoy</button>
+    <button class="drawer-nav-item" id="dnav-missions" onclick="switchTab('missions');closeDrawer()"><span class="drawer-nav-icon">🎯</span> Misiones</button>
+    <button class="drawer-nav-item" id="dnav-hist" onclick="switchTab('hist');closeDrawer()"><span class="drawer-nav-icon">📅</span> Historial</button>
+    <button class="drawer-nav-item" id="dnav-profile" onclick="switchTab('profile');closeDrawer()"><span class="drawer-nav-icon">👤</span> Perfil & Logros</button>
+    <button class="drawer-nav-item" id="dnav-store" onclick="switchTab('store');closeDrawer()"><span class="drawer-nav-icon">🏪</span> Tienda</button>
+    <button class="drawer-nav-item" id="dnav-friends" onclick="switchTab('friends');closeDrawer()"><span class="drawer-nav-icon">👥</span> Amigos & Desafíos</button>
+    <button class="drawer-nav-item" id="dnav-config" onclick="switchTab('config');closeDrawer()"><span class="drawer-nav-icon">⚙️</span> Configuración</button>
+    <button class="drawer-nav-item" onclick="openModeSelector();closeDrawer()"><span class="drawer-nav-icon">🎮</span> Modo de juego</button>
+    <button class="drawer-nav-item" onclick="openRestDayModal();closeDrawer()"><span class="drawer-nav-icon">🏖️</span> Día libre semanal</button>
+    <button class="drawer-nav-item" onclick="tutPage=0;document.getElementById('tutorial').style.display='flex';document.getElementById('tutorial').style.opacity='1';renderTutPage();closeDrawer()"><span class="drawer-nav-icon">❓</span> Ver tutorial</button>
+  </nav>
+  <div class="drawer-footer">DesafioHV · Tu rutina diaria</div>
+</div>
+
+<!-- EDIT MODAL -->
+<div class="modal-overlay" id="edit-modal" style="display:none">
+  <div class="modal-box">
+    <div class="modal-header"><div class="modal-title">Editar actividad</div><button class="modal-close" onclick="closeEdit()">✕</button></div>
+    <div class="field"><label>Nombre</label><input type="text" id="e-name" maxlength="40"/></div>
+    <div class="form-row">
+      <div class="field"><label>Hora inicio</label><input type="time" id="e-start"/><div class="field-error" id="e-overlap-err" style="display:none"></div></div>
+      <div class="field"><label>Hora fin</label><input type="time" id="e-end"/></div>
+    </div>
+    <div class="field"><label>Color</label><div class="color-row" id="edit-color-row"></div></div>
+    <div class="field"><label>Días</label><div class="day-picker-row" id="e-days"></div></div>
+    <div class="form-actions"><button class="btn-cancel" onclick="closeEdit()">Cancelar</button><button class="btn-save" onclick="saveEdit()">Guardar</button></div>
+  </div>
+</div>
+
+<!-- CONFIRM DIALOG -->
+<div id="confirm-overlay">
+  <div class="confirm-box">
+    <div class="confirm-title" id="confirm-title">Confirmar</div>
+    <div class="confirm-msg" id="confirm-msg"></div>
+    <div class="confirm-actions">
+      <button class="btn-confirm-cancel" onclick="closeConfirm()">Cancelar</button>
+      <button class="btn-confirm-ok" id="confirm-ok-btn">Confirmar</button>
+    </div>
+  </div>
+</div>
+
+<!-- TOP BAR -->
+<div class="top-bar">
+  <button class="menu-btn" onclick="openDrawer()" aria-label="Menú"><span></span><span></span><span></span></button>
+  <div class="top-bar-title" id="top-bar-title">Hoy</div>
+  <div class="top-bar-date" id="top-bar-date"></div>
+  <div class="tb-badges">
+    <div class="mode-indicator" id="mode-indicator" onclick="openModeSelector()" title="Cambiar modo">🟣 Fácil</div>
+    <div class="streak-pill hidden" id="streak-pill" onclick="switchTab('profile');closeDrawer()" title="Tu racha">🔥 <span id="sp-count">0</span></div>
+    <div class="star-badge" id="star-badge" onclick="switchTab('store');closeDrawer()" title="Estrellas">⭐ <span id="sb-count">0</span></div>
+  </div>
+</div>
+
+<!-- HOY VIEW -->
+<div id="main">
+  <div class="clock-section">
+    <div class="clock-wrapper"><svg id="clock-svg" viewBox="0 0 280 280"></svg></div>
+  </div>
+  <div class="streak-banner hidden" id="streak-banner">
+    <div class="streak-flame" id="streak-flame">🔥</div>
+    <div class="streak-text"><div class="streak-title" id="streak-title">Racha activa</div><div class="streak-sub">días consecutivos al 100%</div></div>
+    <div class="streak-val" id="streak-val">0</div>
+  </div>
+  <div class="shield-banner hidden" id="shield-banner">
+    <span style="font-size:1.3rem">🛡️</span>
+    <div style="flex:1"><div style="font-size:0.82rem;font-weight:700;color:var(--teal)">Escudo activo hoy</div><div style="font-size:0.68rem;color:var(--text2);margin-top:1px">Tu racha está protegida hoy</div></div>
+  </div>
+  <div class="prog-wrap">
+    <div class="prog-header"><span>Progreso del día</span><span class="prog-pct" id="prog-pct">0%</span></div>
+    <div class="prog-bg"><div class="prog-fill" id="prog-fill" style="width:0%"></div></div>
+  </div>
+  <div class="sec-title">Actividades</div>
+  <div id="act-list"></div>
+  <div style="margin-top:0.5rem">
+    <button class="add-toggle" id="add-toggle-btn" onclick="toggleForm()"><span style="font-size:1.1rem">＋</span> Agregar actividad</button>
+    <div class="add-form" id="add-form">
+      <div class="form-title">Nueva actividad</div>
+      <div class="field"><label>Nombre</label><input type="text" id="f-name" placeholder="ej: Trotar, Estudiar, Gym..." maxlength="40"/></div>
+      <div class="form-row">
+        <div class="field"><label>Hora inicio</label><input type="time" id="f-start" value="07:00"/><div class="field-error" id="f-overlap-err" style="display:none"></div></div>
+        <div class="field"><label>Hora fin</label><input type="time" id="f-end" value="08:00"/></div>
+      </div>
+      <div class="field"><label>Color</label><div class="color-row" id="color-row"></div></div>
+      <div class="field"><label>Días</label><div class="day-picker-row" id="f-days"></div></div>
+      <div class="form-actions"><button class="btn-cancel" onclick="toggleForm()">Cancelar</button><button class="btn-save" onclick="saveActivity()">Guardar</button></div>
+    </div>
+  </div>
+</div>
+
+<!-- MISSIONS VIEW -->
+<div id="missions-view" style="display:none">
+  <div class="missions-page-header">
+    <div class="missions-page-title">🎯 Misiones del día</div>
+    <div class="missions-page-sub" id="mp-progress">Cargando...</div>
+    <div class="mp-prog-bar-bg"><div class="mp-prog-bar-fill" id="mp-prog-fill" style="width:0%"></div></div>
+  </div>
+  <div class="mp-section-title">Misiones diarias <span class="mp-section-badge">⏱ 24 horas</span></div>
+  <div id="missions-page-list"></div>
+  <div class="mp-section-title" id="mp-secondary-title" style="display:none">Misiones secundarias <span class="mp-secondary-badge">🏅 Largo plazo</span></div>
+  <div id="missions-page-secondary"></div>
+  <div id="mp-pool" style="margin-top:1.5rem"></div>
+</div>
+
+<!-- HISTORIAL VIEW -->
+<div id="hist-view" style="display:none">
+  <div class="hist-header"><div class="hist-title">Historial</div><div class="hist-subtitle" id="hist-subtitle"></div></div>
+  <div class="cal-section">
+    <div class="cal-header">
+      <div class="cal-month-title" id="cal-month-title"></div>
+      <div style="display:flex;gap:6px;">
+        <button class="cal-nav-btn" onclick="changeMonth(-1)">‹ Ant.</button>
+        <button class="cal-nav-btn" onclick="changeMonth(1)">Sig. ›</button>
+      </div>
+    </div>
+    <div class="cal-weekdays" id="cal-weekdays"></div>
+    <div class="cal-days" id="cal-days"></div>
+    <div class="cal-legend">
+      <div class="cal-legend-item"><div class="cal-leg-box" style="background:rgba(255,255,255,0.04)"></div>Sin datos</div>
+      <div class="cal-legend-item"><div class="cal-leg-box" style="background:rgba(127,119,221,0.14)"></div>1–30%</div>
+      <div class="cal-legend-item"><div class="cal-leg-box" style="background:rgba(127,119,221,0.3)"></div>31–69%</div>
+      <div class="cal-legend-item"><div class="cal-leg-box" style="background:rgba(127,119,221,0.55)"></div>70–99%</div>
+      <div class="cal-legend-item"><div class="cal-leg-box" style="background:rgba(29,158,117,0.28)"></div>100%</div>
+    </div>
+  </div>
+  <div class="chart-wrap">
+    <div class="chart-label">Últimos 14 días</div>
+    <div class="mini-chart" id="mini-chart"></div>
+  </div>
+  <div class="sec-title">📊 Análisis de tiempo</div>
+  <div id="time-analysis"></div>
+</div>
+
+<!-- PROFILE VIEW -->
+<div id="profile-view" style="display:none">
+  <div class="profile-hero">
+    <div class="profile-avatar">🏆</div>
+    <div class="profile-name" id="profile-name">Mi Rutina</div>
+    <div class="profile-sub">DesafioHV · Tracker personal</div>
+    <div id="profile-cloud-slot"></div>
+    <div class="profile-stats">
+      <div class="prof-stat"><div class="prof-stat-val" id="ps-streak">0</div><div class="prof-stat-lbl">Racha</div></div>
+      <div class="prof-stat"><div class="prof-stat-val" id="ps-total">0</div><div class="prof-stat-lbl">Días 100%</div></div>
+      <div class="prof-stat"><div class="prof-stat-val" id="ps-acts">0</div><div class="prof-stat-lbl">Actividades</div></div>
+      <div class="prof-stat"><div class="prof-stat-val" id="ps-ach-stars">0</div><div class="prof-stat-lbl">⭐ logros</div></div>
+    </div>
+    <div class="prof-mode-display">
+      <span style="font-size:0.72rem;color:var(--text3)">Modo:</span>
+      <span id="ps-mode" style="font-size:0.82rem;font-weight:700"></span>
+    </div>
+  </div>
+  <div class="sec-title">Logros</div>
+  <div class="rewards-grid" id="rewards-grid"></div>
+</div>
+
+<!-- STORE VIEW -->
+<div id="store-view" style="display:none">
+  <div class="store-header">
+    <div class="store-title">Tienda</div>
+    <div class="store-sub">Comprá power-ups con tus estrellas</div>
+  </div>
+  <div class="store-balance">
+    <div class="store-balance-icon">⭐</div>
+    <div class="store-balance-text">
+      <div class="store-balance-lbl">Estrellas disponibles</div>
+      <div class="store-balance-val" id="store-stars">0</div>
+    </div>
+  </div>
+  <div class="sec-title">Power-ups</div>
+  <div class="store-grid" id="store-grid"></div>
+  <div class="sec-title">🎒 Mi mochila</div>
+  <div class="backpack-grid" id="backpack-grid"></div>
+</div>
+
+<div id="config-view" style="display:none"></div>
+<div id="friends-view" style="display:none"></div>
+<div id="cal-tooltip"><div class="tt-date"></div><div class="tt-pct"></div><div class="tt-acts"></div></div>
+<canvas id="confetti-canvas"></canvas>
+<div id="toast"></div>
+<div class="sync-indicator" id="sync-indicator">☁️ Guardado</div>
+
+<!-- PWA INSTALL BANNER -->
+<div id="pwa-banner">
+  <div class="pwa-banner-icon">📱</div>
+  <div class="pwa-banner-text">
+    <div class="pwa-banner-title">Instalá DesafioHV</div>
+    <div class="pwa-banner-sub">Acceso rápido desde tu pantalla de inicio</div>
+  </div>
+  <div class="pwa-banner-btns">
+    <button class="pwa-install-btn" id="pwa-install-btn">Instalar</button>
+    <button class="pwa-dismiss-btn" id="pwa-dismiss-btn">✕</button>
+  </div>
+</div>
+
+<!-- NEW CHALLENGE MODAL -->
+<div class="modal-overlay" id="challenge-modal" style="display:none">
+  <div class="modal-box" style="max-width:420px">
+    <div class="modal-header">
+      <div class="modal-title">⚔️ Nuevo desafío</div>
+      <button class="modal-close" onclick="closeChallengeModal()">✕</button>
+    </div>
+    <div id="challenge-modal-body"></div>
+  </div>
+</div>
+
+<!-- ADD FRIEND MODAL -->
+<div class="modal-overlay" id="add-friend-modal" style="display:none">
+  <div class="modal-box" style="max-width:420px">
+    <div class="modal-header">
+      <div class="modal-title">➕ Agregar amigo</div>
+      <button class="modal-close" onclick="closeAddFriendModal()">✕</button>
+    </div>
+    <div id="add-friend-modal-body"></div>
+  </div>
+</div>
+
+<script type="module" src="script.js"></script>
+</body>
+</html>

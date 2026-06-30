@@ -1,0 +1,38 @@
+{
+  "name": "DesafioHV",
+  "short_name": "DesafioHV",
+  "description": "Dominá tus 24 horas - Tu tracker de rutinas personal",
+  "start_url": "/DesafioHV9/",
+  "scope": "/DesafioHV9/",
+  "display": "standalone",
+  "background_color": "#06061f",
+  "theme_color": "#06061f",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 192 192'><rect width='192' height='192' rx='32' fill='%2306061f'/><text x='96' y='130' font-size='100' text-anchor='middle'>⭐</text></svg>",
+      "sizes": "192x192",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 512 512'><rect width='512' height='512' rx='80' fill='%2306061f'/><text x='256' y='340' font-size='260' text-anchor='middle'>⭐</text></svg>",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["productivity", "lifestyle", "health"],
+  "shortcuts": [
+    {
+      "name": "Ver hoy",
+      "short_name": "Hoy",
+      "url": "/DesafioHV9/?tab=hoy"
+    },
+    {
+      "name": "Misiones",
+      "short_name": "Misiones",
+      "url": "/DesafioHV9/?tab=missions"
+    }
+  ]
+}
